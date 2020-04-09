@@ -51,7 +51,8 @@ public class CoronaVirusDataServices {
 
     public List<LocationStats> getAllStats() {
         return allStats.stream()
-                .sorted(Comparator.comparing(LocationStats::getDiffFromPreviousDay).reversed())
+                .sorted(Comparator.comparing(LocationStats::getDiffFromPreviousDay)
+                        .reversed())
                 .collect(Collectors.toList());
     }
 }
