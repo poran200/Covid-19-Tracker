@@ -3,8 +3,10 @@ package com.chowdury.demo.services;
 import com.chowdury.demo.models.LocationStats;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -27,13 +29,16 @@ public class CoronaVirusDataServices {
     @Scheduled(cron = "* * 1 * * *")
     public  void  fetchVirusData() throws IOException, InterruptedException {
          List<LocationStats> newStats = new ArrayList<>();
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(VIRUS_DATA_URL))
-                .build();
-        HttpResponse<String> httpResponse = client.send(request,HttpResponse.BodyHandlers.ofString());
+        String responseEntity = getAllData();
+
+//        System.out.println(responseEntity);
+//        HttpClient client = HttpClient.newHttpClient();
+//        HttpRequest request = HttpRequest.newBuilder()
+//                .uri(URI.create(VIRUS_DATA_URL))
+//                .build();
+//        HttpResponse<String> httpResponse = client.send(request,HttpResponse.BodyHandlers.ofString());
 //        System.out.println(httpResponse.body());
-        StringReader csvBodyReader = new StringReader(httpResponse.body());
+        StringReader csvBodyReader = new StringReader(responseEntity);
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(csvBodyReader);
         for (CSVRecord record : records) {
             LocationStats locationStat = new LocationStats();
@@ -47,6 +52,11 @@ public class CoronaVirusDataServices {
             newStats.add(locationStat);
         }
         this.allStats = newStats;
+    }
+
+    private String getAllData() {
+        RestTemplate restTemplate =  new RestTemplate();
+        return restTemplate.getForObject(VIRUS_DATA_URL,String.class);
     }
 
     public List<LocationStats> getAllStats() {
